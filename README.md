@@ -3,4 +3,5 @@ In this project, we analyze a dataset of individual health insurance records to 
 1. Describe and explore the variables in the dataset.
 2. Identify which factors are significantly associated with insurance charges.
 3. Build and interpret simple and multiple linear regression models to explain and predict medical charges.
+
 The dependent variable is charges — the annual medical cost billed by the health insurance provider, expressed in US dollars.

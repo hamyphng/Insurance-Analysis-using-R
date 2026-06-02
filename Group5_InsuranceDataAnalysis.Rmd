@@ -1,0 +1,417 @@
+---
+title: "INSURANCE DATA ANALYSIS AND APPLICATION OF REGRESSION MODELS"
+author: "Group 5"
+date: "`r Sys.Date()`"
+output: html_document
+---
+## Lecturer: Evans Gouno
+- Course: Applied Statistics
+- Class ID: 168144
+
+## Group member
+
+| <img src="ppa.jpg" width="100%"> | <img src="vnd.jpg" width="100%"> | <img src="huy.png" width="100%"> | <img src="hmy.jpg" width="fit"> |
+|:---:|:---:|:---:|:---:|
+| **Phan Phuong Anh** | **Vo Ngoc Diep** | **Nguyen Nhu Quang Huy** | **Pham Nguyen Ha My** |
+| *202413659* | *202413674* | *202413695* | *202413754* |
+
+## 1. Introduction
+In this project, we analyze a dataset of individual health insurance records to understand what drives insurance charges. Health insurance costs vary widely across individuals, and understanding the factors that drive these differences is important for both insurers and policyholders. In this study, we analyze a dataset of **1,338 insurance records** containing demographic and lifestyle information such as **age, sex, BMI, number of children, smoking status, and region of residence**. The motivation behind this project is to identify which characteristics most strongly influence insurance charges, helping to explain why some individuals pay significantly more than others. Our goal is to:
+
+- Describe and explore the variables in the dataset.
+- Identify which factors are significantly associated with insurance charges.
+- Build and interpret **simple and multiple linear regression models** to explain and predict
+   medical charges.
+   
+The dependent variable is **charges** — the annual medical cost billed by the health insurance provider, expressed in US dollars.
+
+## 2. Data Description
+### 2.1 Loading the data
+Let's have a look on the dataset: **Insurance**.
+
+- Import the data
+```{r}
+data<-read.csv("insurance.csv")
+```
+- To have an overview on the data
+```{r}
+str(data)
+```
+- Dimension
+```{r}
+dim(data)
+```
+- First 5 lines  of the dataset
+```{r}
+head(data)
+```
+- The number of non-available (NA) data
+```{r}
+sum(is.na(data))
+```
+The dataset has 1,338 rows and 7 columns. There are  4 quantitative (age, bmi, charge, children), and 3 categorical (sex, smoker, region). There are **no missing values** in the dataset, so no removal of records is necessary.
+
+### 2.2 Statistics and Visualizations for each variable
+We will use the variables' name for description. For each variable, we provide its statistical summary, a visualization, and comment on the results.
+
+#### 2.2.1 Data Overview
+```{r}
+attach(data)
+summary(data)
+```
+
+**Overall:** The average annual charge is 13,270 while the median is only 9,382 (dollars), indicating a strong right skew, a relatively small number of very costly cases pull the mean upward. The age variable spans 18 to 64 years with a fairly uniform spread. BMI has a mean of 30.7, just above the clinical threshold for obesity (30), suggesting that a large portion of the insured population is overweight. 
+
+
+#### 2.2.2 Quantitative Variables
+**Children**
+```{r}
+summary(children)
+```
+```{r}
+par(mfrow = c(1, 2))
+barplot(table(children),
+        col = "#ced1f8",
+        main = "Number of Children",
+        xlab = "Children", ylab = "Count",
+        ylim = c(0, 600))
+
+boxplot(children,
+        col = "#ced1f8",
+        main = "Boxplot of Children",
+        xlab = "Children")
+```
+
+The majority of insured individuals have no dependents (574 out of 1,338, or ~43%). The number of children decreases as the count increases, with very few individuals having 4 or 5 dependents (25 and 18, respectively). The variable is strongly right-skewed: the median is 1 and the mean is 1.09. Although children is a discrete variable, it can reasonably be included as a numerical predictor in regression since it measures a quantity with natural ordering. 
+
+**Age**
+```{r}
+summary(age)
+```
+```{r}
+par(mfrow = c(1, 2))
+hist(age, nclass = 30, 
+        col = "lightblue", border = "white", 
+        main = "Distribution of Age",
+        xlab = "Age (years)", ylab = "Frequency")
+
+boxplot(age,
+        col = "lightblue", 
+        main = "Boxplot of Age",
+        xlab = "Age (years)")
+```
+
+The histogram shows a nearly uniform distribution of age from 18 to 64, with a slight spike at the 18–20 bracket. The mean and median are both close to 39 years, confirming the distribution is roughly symmetric with no extreme skewness. The boxplot confirms the absence of outliers and shows a well-centred interquartile range (27-51). Age is a natural continuous predictor of insurance charges, as health costs tend to increase with age.
+
+**BMI**
+```{r}
+summary(bmi)
+```
+```{r}
+par(mfrow = c(1, 2))
+hist(bmi, nclass = 30, 
+        col = "lightpink", border = "white",
+        main = "Distribution of BMI",
+        xlab = "BMI (kg/m2)", ylab = "Frequency")
+
+boxplot(bmi,
+        col = "lightpink", 
+        main = "Boxplot of BMI",
+        xlab = "BMI (kg/m2)")
+```
+
+BMI follows an approximately normal distribution centred around 30.7 kg/m². The boxplot shows a few high-end outliers above ~45, which correspond to individuals with severe obesity. High BMI is clinically associated with greater medical expenses, making it an important predictor of charges.
+
+**Charges**
+```{r}
+summary(charges)
+```
+```{r}
+par(mfrow = c(1, 2))
+hist(charges, nclass = 50, 
+        col ="#f9e1a8", border = "white",
+        main = "Distribution of Charges (USD)",
+        xlab = "Annual charges (USD)", ylab = "Frequency")
+
+boxplot(charges,
+        col = "#f9e1a8",
+        main = "Boxplot of Charges (USD)",
+        xlab = "Annual charges (USD)")
+```
+
+The distribution of insurance charges is significantly right-skewed, indicating that while most individuals incur lower costs, a small portion of the population accounts for very high expenditures. The histogram is multimodal, showing two distinct clusters: a primary peak in the \$1,000 and \$5,000 range (representing low-cost, likely non-smoking individuals) and a secondary "hump" between $30,000 and $40,000 
+
+
+#### 2.2.3 Categorical Variables
+
+**Sex**
+```{r}
+barplot(table(sex),
+        col = c("#f9c5c7", "#b6d8f7"),
+        main = "Distribution of Sex",
+        xlab = "Sex", ylab = "Count",
+        ylim = c(0, 800))
+```
+
+The sex variable is nearly perfectly balanced: 676 males (50.5%) and 662 females (49.5%). This nearly equal split is ideal for regression analysis as it avoids class imbalance and ensures that any effect of sex on charges will not be confounded by sample size differences.
+
+**Smoker**
+```{r}
+barplot(table(smoker),
+        col = c("#cde9dc", "#ffdab4"),
+        main = "Distribution of Smoker Status",
+        xlab = "Smoker", ylab = "Count",
+        ylim = c(0, 1200))
+```
+
+The dataset is heavily imbalanced regarding smoking status: 1,064 non-smokers (79.5%) versus only 274 smokers (20.5%). Despite being a minority, smokers are expected to drive a large part of the variance in charges, since smoking is strongly associated with higher healthcare costs. Smoker variable will likely be one of the most significant predictors in the regression model.
+
+**Region**
+```{r}
+barplot(table(region),
+        col = c("#ffb3ba","#ffdfba","#ffffba","#baffc9"),
+        main = "Distribution of Region",
+        xlab = "Region", ylab = "Count",
+        ylim = c(0, 400))
+```
+
+The four regions are very evenly distributed: southeast has the most observations (364), while the other three are nearly identical (~325). This balanced distribution is favorable for regression: when region is included as a categorical predictor, no level will dominate the model estimation. The slight excess in the southeast region could be noteworthy if regional cost differences are found to be significant.
+
+## 3. Analysis of relationships between variables
+We analyze the relationships between variables in the insurance dataset. The objective is to identify key factors affecting **medical charges** using exploratory data analysis, correlation, and regression models.
+
+### 3.1 Pairwise Relationships and Correlation Analysis
+
+- Pairwise Relationships
+```{r}
+quant_var <- data[, c("age", "bmi", "children", "charges")]
+pairs(quant_var,
+      main = "Scatterplot Matrix",
+      pch = 19,
+      col = "lightblue")
+```
+
+The pairwise relationships reveal a positive relationship between age and charges, as well as between BMI and charges. The number of children does not show a clear pattern with medical costs.
+
+- Correlation Analysis
+```{r}
+cor_matrix <- cor(quant_var)
+cor_matrix
+```
+
+Charges are positively correlated with age and BMI, indicating that older individuals and those with higher BMI tend to incur higher medical costs. The correlation with children is weak.
+
+### 3.2 Simple Regression Analysis
+
+#### 3.2.1 Charges by Quantitative Predictors
+
+**Charges and Age**
+
+Explain the charges through the age data:
+$$charges=\beta_0+\beta_1 age$$
+```{r}
+model_age <- lm(charges ~ age, data)
+summary(model_age)
+```
+```{r}
+plot(age, charges,
+     main = "Charges vs Age",
+     xlab = "Age",
+     ylab = "Charges",
+     pch = 19,
+     col = "lightblue")
+
+abline(model_age, col = "red", lwd = 2)
+```
+
+- The **slope** 257.7 means that each additional year of age is associated with approximately $258 in annual charges, on average.
+- The slope is highly statistically significant (*p* < 0.001), confirming that age is a relevant predictor.
+- However, the $R^2$ ~0.089 is relatively modest, meaning age alone explains only about 8.9% of the variability in charges.
+
+**Charges and BMI**
+
+Explain the charges through the bmi:
+$$charges=\beta_0+\beta_1 bmi$$
+```{r}
+model_bmi <- lm(charges ~ bmi, data)
+summary(model_bmi)
+```
+```{r}
+plot(bmi, charges,
+     main = "Charges vs BMI",
+     xlab = "BMI",
+     ylab = "Charges",
+     pch = 19,
+     col = "lightblue")
+
+abline(model_bmi, col = "red", lwd = 2)
+```
+
+- BMI has a positive and significant effect on charges, as individuals with higher BMI tend to have higher healthcare costs. Each unit increase in BMI is associated with approximately $394 in charges.
+- The relationship is significant (*p* < 0.001), but $R^2$ ~0.039 shows that BMI alone explains only 3.9% of the variance — a weaker fit than age. 
+
+**Charges and Children**
+
+Explain the charges through the number of children:
+$$charges=\beta_0+\beta_1 children$$
+```{r}
+model_children <- lm(charges ~ children, data)
+summary(model_children)
+```
+```{r}
+plot(children, charges,
+     main = "Charges vs Children",
+     xlab = "Children",
+     ylab = "Charges",
+     pch = 19,
+     col = "lightblue")
+
+abline(model_children, col = "red", lwd = 2)
+```
+
+- The slope is positive $\hat{\beta}_1$ ~683, meaning more children is associated with slightly higher charges.
+- However, $R^2$ ~0.0046 - children alone explains less than 1% of the variance in charges, and the effect is barely significant. It is the weakest of the three quantitative predictors.
+
+#### 3.2.2 Charges by Categorical Variables
+```{r}
+par(mfrow = c(1, 3))
+
+boxplot(charges ~ sex,
+        data  = data,
+        main  = "Charges by Sex",
+        xlab  = "Sex", ylab = "Charges (USD)",
+        col   = c("#f9c5c7", "#b6d8f7"))
+
+boxplot(charges ~ smoker,
+        data  = data,
+        main  = "Charges by Smoker",
+        xlab  = "Smoker", ylab = "Charges (USD)",
+        col   = c("#cde9dc", "#ffdab4"))
+
+boxplot(charges ~ region,
+        data  = data,
+        main  = "Charges by Region",
+        xlab  = "Region", ylab = "Charges (USD)",
+        col   = c("#ffb3ba","#ffdfba","#ffffba","#baffc9"))
+legend("topright",
+       legend = c("northeast", "northwest", "southeast", "southwest"),
+       col    = c("#ffb3ba","#ffdfba","#ffffba","#baffc9"),
+       lty    = 1, lwd = 5)
+```
+
+- **sex**: Males and females have very similar charge distributions. Males appear to have a slightly higher median, but the difference looks small.
+- **smoker**: This is the most striking pattern in the data. Smokers have dramatically higher charges - their median exceeds the 75th percentile of non-smokers. Smoking is clearly the most important predictor.
+- **region**: Charges are similar across the four US regions, with the southeast showing slightly higher variation and a higher median, possibly due to higher average BMI in that region.
+  
+**Charges and Smoker**
+
+Explain the charges through the smoker data:
+$$charges=\beta_0+\beta_1 smoker$$
+```{r}
+model_smoker <- lm(charges ~ smoker, data)
+summary(model_smoker)
+```
+
+- The intercept ~8,434 is the estimated mean charges for **non-smokers**.
+- The coefficient for smokeryes (~ 23,616) means that smokers pay, on average, roughly $23,616 more per year than non-smokers.
+- $R^2$ ~0.619, making smoker the single best simple predictor, explaining about 62% of the variance.
+
+## 4. Multiple Regression
+### 4.1 Model Using All Variables
+
+$$charges=\beta_0+\beta_1 age+\beta_2 bmi+\beta_3 children+\beta_4 sex+\beta_5 smoker+\beta_6 region$$
+```{r}
+model_full <- lm(charges ~ age + bmi + children + sex + smoker + region, data)
+summary(model_full)
+```
+
+The multiple regression model shows a higher R-squared value, indicating better explanatory power compared to simple models. Age and 
+BMI remain significant predictors, while smoking status has the strongest effect. The number of children remains insignificant.
+
+Detailed Interpretation of the Full Model:
+
+**Model fit:**
+
+- $R^2 =$ 0.7509 - the full model explains about 75% of the total variance in charges. This is a substantial improvement over any single-predictor model.
+- Adjusted $R^2 =$ 0.7494 - very close to $R^2$, confirming that the added variables genuinely contribute and are not simply inflating fit by chance.
+- The overall $p-value$ is highly significant (*p* < 0.001), so the model as a whole is statistically meaningful.
+
+**Coefficients:**
+
+- age: $\beta_1\ =$ 256.9 - Each extra year adds ~$257
+- sexmale: $\beta_1\ =$ -131.3 - Males pay ~$131 less 
+- bmi: $\beta_1\ =$ 339.2 - Each BMI unit adds ~$339
+- children: $\beta_1\ =$ 475.5 - Each child adds ~$476
+- smokeryes: $\beta_1\ =$ 23848.5 - Smokers pay ~$23,849 more 
+- regionnorthwest: $\beta_1\ =$ -353
+- regionsoutheast: $\beta_1\ =$ -1035
+- regionsouthwest: $\beta_1\ =$ -960
+
+**Significance:**
+
+- age, bmi, children, and smoker are **highly significant** (*p* < 0.001).
+- sex is **not significant** (*p* ~0.693) - once we control for the other variables, sex does not meaningfully explain charge differences.
+- region coefficients are mostly not significant or marginally so, suggesting that geographic location has limited additional explanatory power once the other factors are accounted for.
+
+
+### 4.2 Reduced Model: Remove Non-Significant Predictors
+
+Based on the full model analysis, sex and region showed limited significance. We now fit a reduced model retaining only the clearly significant predictors.
+```{r}
+model_reduced <- lm(charges ~ age + bmi + children + smoker, data)
+summary(model_reduced)
+```
+
+- The reduced model has Adjusted $R^2 =$ 0.7489, almost identical to the full model
+- All four predictors in the reduced model are highly significant (*p* < 0.001).
+
+### 4.3 Final Reduced Model Summary
+We have the equation:
+$$PredCharges=-12,102.77 + 257.85 age + 321.85 bmi + 473.50 children + 23,811.40 smoker(yes=1)$$
+
+This means that we can predict the medical charge of a person based on their **age, bmi, children and status of smoking**
+
+- A **non-smoker** (smoker = 0) aged 40 with a BMI of 30 and 2 children would be predicted to incur:
+  $$-12,102.77 + 257.85 * 40 + 321.85 * 30 + 473.50 * 2 = 8,814\ USD/year$$ 
+  
+- The same person who **smokes** would be predicted to spend \$23,811 more:
+  $$-12,102.77 + 257.85 * 40 + 321.85 * 30 + 473.50 * 2 + 23,811.40 = 32,625\ USD/year$$
+
+## 5. Conclusion
+
+### 5.1 Key Findings
+
+This study applied simple and multiple linear regression to a dataset of 1,338 insurance
+beneficiaries to understand what drives annual medical charges.
+
+**1. Smoking is by far the most important predictor.** 
+A single dummy variable for smoking status explains nearly `r round(summary(model_smoker)$r.squared * 100, 1)`% of the variance
+in charges on its own, and in the multiple regression model, smokers are predicted to pay
+approximately $`r format(round(coef(model_reduced)["smokeryes"], 0), big.mark = ",")` more
+per year than otherwise identical non-smokers.
+
+**2. Age and BMI have significant positive effects.** 
+Each additional year of age adds about $`r round(coef(model_reduced)["age"], 0)` to expected charges, and each unit of BMI adds
+about $`r round(coef(model_reduced)["bmi"], 0)`. Both effects are highly statistically
+significant.
+
+**3. Number of children has a small but significant positive effect** on charges, which may
+reflect that families with more dependents tend to seek medical care more frequently.
+
+**4. Sex and region are not significant predictors** once the other variables are controlled for.
+The reduced model - which excludes them - performs as well as the full model.
+
+**5. The final multiple regression model** explains about
+`r round(summary(model_reduced)$r.squared * 100, 1)`%** of the variance in charges
+(Adjusted $R^2$ ~ `r round(summary(model_reduced)$adj.r.squared, 3)`), which is a
+strong result for a real-world observational dataset with only 4 predictors.
+
+### 5.2 Strengths
+- The dataset includes both categorical and numerical variables, allowing for meaningful statistical exploration. The combination of demographic and lifestyle factors provides a broad view of cost drivers.
+- The dataset is complete (no missing values) and large enough (n = 1,338) for robust regression.
+- The analysis progresses logically from description to simple to multiple regression.
+
+### 5.3 Limitations
+
+- **Observational data:** The model explains only part of the variation in charges. Important factors such as medical history, income, or type of insurance coverage are not included, which limits the explanatory power. Besides, we cannot establish causal effects - for example, it is possible that smoking-related differences in charges partly reflect confounding factors (e.g., diet, exercise habits) not captured in the dataset.
+- **Specific context:** The dataset reflects the specific area insurance market, thus the results may not generalize to other healthcare systems.

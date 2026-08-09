@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🩺 Health Insurance Charges Analysis
+# Health Insurance Charges Analysis
 
 ### Exploratory Data Analysis • Statistical Modeling • Linear Regression
 
@@ -21,7 +21,7 @@ A compact statistical analysis of the demographic and lifestyle factors associat
 
 ---
 
-## ✨ Project at a Glance
+## Project at a Glance
 
 | | |
 |---|---|
@@ -37,7 +37,7 @@ A compact statistical analysis of the demographic and lifestyle factors associat
 
 ---
 
-## 🧭 Navigation
+## Navigation
 
 <p align="center">
   <a href="#-dataset">Dataset</a> •
@@ -50,7 +50,7 @@ A compact statistical analysis of the demographic and lifestyle factors associat
 
 ---
 
-## 📦 Dataset
+## Dataset
 
 The dataset contains **1,338 observations** and **7 variables**, with no missing values.
 
@@ -84,7 +84,7 @@ The dataset contains **1,338 observations** and **7 variables**, with no missing
 
 ---
 
-# 📊 Exploratory Data Analysis
+# Exploratory Data Analysis
 
 ## Quantitative Variables
 
@@ -143,7 +143,7 @@ The sample is almost perfectly balanced by sex and reasonably balanced across re
 
 ---
 
-# 🔍 Relationships with Charges
+# Relationships with Charges
 
 ## Pairwise View
 
@@ -197,7 +197,7 @@ The clearest separation is produced by **smoking status**. Sex and region show f
 
 ---
 
-# 📈 Regression Results
+# Regression Results
 
 ## Model Comparison
 
@@ -240,13 +240,13 @@ The reduced model removes **sex** and **region**, which contribute little additi
 
 ---
 
-# 💡 Key Findings
+# Key Findings
 
 <table>
 <tr>
 <td width="50%" valign="top">
 
-### 🚬 Smoking dominates
+### Smoking dominates
 
 Smoking status alone explains approximately **61.9%** of charge variation.
 
@@ -255,7 +255,7 @@ In the multivariable model, the estimated smoking effect remains extremely large
 </td>
 <td width="50%" valign="top">
 
-### 🎂 Age matters
+### Age matters
 
 Older individuals tend to incur higher medical costs.
 
@@ -266,7 +266,7 @@ The relationship remains significant after adjustment for the other predictors.
 <tr>
 <td width="50%" valign="top">
 
-### ⚖️ BMI adds signal
+### BMI adds signal
 
 Higher BMI is associated with higher annual charges.
 
@@ -275,7 +275,7 @@ Its standalone explanatory power is modest, but it contributes meaningfully in t
 </td>
 <td width="50%" valign="top">
 
-### 🧩 Simpler is almost as good
+### Simpler is almost as good
 
 Removing sex and region changes adjusted R² only from **0.7494 → 0.7489**.
 
@@ -287,7 +287,7 @@ The reduced model is therefore more parsimonious without materially sacrificing 
 
 ---
 
-## 🧪 Example Prediction
+## Example Prediction
 
 For a **40-year-old**, **BMI 30**, with **2 children**:
 
@@ -301,7 +301,7 @@ This illustrates how strongly smoking status shifts the model prediction even wh
 
 ---
 
-# 🧠 Interpretation
+# Interpretation
 
 The analysis indicates that insurance charges are not explained equally by all available demographic variables.
 
@@ -311,7 +311,7 @@ The reduced model captures roughly **75% of observed charge variation** using on
 
 ---
 
-# ⚠️ Limitations
+# Limitations
 
 - The dataset is **observational**, so regression coefficients represent associations rather than established causal effects.
 - Important determinants such as medical history, income, exercise, diet, and insurance-plan characteristics are unavailable.
@@ -322,7 +322,7 @@ The reduced model captures roughly **75% of observed charge variation** using on
 ---
 
 <details>
-<summary><b>📁 Repository Structure</b></summary>
+<summary><b>Repository Structure</b></summary>
 
 ```text
 .
@@ -349,7 +349,7 @@ The reduced model captures roughly **75% of observed charge variation** using on
 
 <div align="center">
 
-### ⭐ If you found this analysis useful, consider starring the repository.
+### If you found this analysis useful, consider starring the repository.
 
 **Health Insurance Charges Analysis**
 
